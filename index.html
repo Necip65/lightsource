@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+    <title>lightsource</title>
+
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://preview.babylonjs.com/gui/babylon.gui.min.js"></script>
+
+    <style>
+        html,
+        body {
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        #renderCanvas {
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="renderCanvas"></canvas>
+
+    <script>
+        let canvas = document.getElementById("renderCanvas");
+
+        let createScene = function () {
+            let scene = new BABYLON.Scene(engine);
+            // scene.debugLayer.show();
+            scene.clearColor = new BABYLON.Color3(0.1, 0.1, 0.1);
+            // const axes = new BABYLON.AxesViewer(scene, .25);
+
+            let camera = new BABYLON.ArcRotateCamera("camera",
+                BABYLON.Tools.ToRadians(120),
+                BABYLON.Tools.ToRadians(90),
+                120,
+                BABYLON.Vector3.Zero(), scene);
+            camera.setTarget(BABYLON.Vector3.Zero());
+            camera.attachControl(canvas, true);
+            camera.upperBetaLimit = null;
+            camera.lowerBetaLimit = null;
+            camera.angularSensibilityX = 2000;
+            camera.angularSensibilityY = 2000;
+            camera.wheelPrecision = 50; //Mouse wheel speed
+
+            // No lights!
+            let lightHemi = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+            lightHemi.intensity = 0.3;
+
+
+            let createPlane = (scene, points, material) => {
+                material.linkEmissiveWithDiffuse = true;
+                material.backFaceCulling = false;   // BABYLON.Mesh.DOUBLESIDE
+
+                let customMesh = new BABYLON.Mesh("custom", scene);
+                customMesh.isPickable = false;
+                customMesh.material = material;
+
+                let positions = [];
+                let indices = [];
+
+                let addPos = (v) => {
+                    positions.push(v.x);
+                    positions.push(v.y);
+                    positions.push(v.z);
+                }
+
+                let idx3 = 0;
+                let addIndices = () => {
+                    indices.push(idx3);
+                    indices.push(idx3 + 1);
+                    indices.push(idx3 + 2);
+                    idx3 += 3;
+                }
+
+                addPos(points[0]);
+                addPos(points[1]);
+                addPos(points[2]);
+                addIndices();
+
+                let vertexData = new BABYLON.VertexData();
+                vertexData.positions = positions;
+                vertexData.indices = indices;
+                vertexData.applyToMesh(customMesh);
+
+                return customMesh;
+            }
+
+
+            let getCollisionPoint = (meshLight, x, y, z) => {
+                let start = new BABYLON.Vector3(x, y, z);
+                let direction = BABYLON.Vector3.Backward(); // Left(); // Forward(); Left(); Right(); Up(); Down(); Zero();
+
+                let length = 150;
+                let ray = new BABYLON.Ray(start, direction, length);
+
+                // let rayHelper = new BABYLON.RayHelper(ray);
+                // rayHelper.show(scene);
+
+                let pickingInfo = scene.pickWithRay(ray);
+                if (pickingInfo.pickedMesh) {
+                    return pickingInfo.pickedPoint;
+                }
+                return null;
+            }
+
+            let meshes = [];
+            let meshesLight = [];
+            let meshesPlane = [];
+
+            let materialObject = new BABYLON.StandardMaterial("hb1mat", scene);
+            materialObject.emissiveColor = BABYLON.Color3.Gray();
+            materialObject.backFaceCulling = false;
+
+            let meshObject = new BABYLON.Mesh.CreatePlane("box", 40, scene, true);
+            meshObject.position.set(0, 0, -50)
+            meshObject.material = materialObject
+            meshObject.convertToFlatShadedMesh();
+            meshes.push(meshObject);
+
+            meshObject = new BABYLON.Mesh.CreatePlane("box", 40, scene, true);
+            meshObject.position.set(0, 0, -50)
+            meshObject.rotation.set(0.75 * Math.PI, 0, 0);
+            meshObject.material = materialObject
+            meshObject.convertToFlatShadedMesh();
+            meshes.push(meshObject);
+
+            meshObject = new BABYLON.Mesh.CreatePlane("box", 40, scene, true);
+            meshObject.position.set(0, 0, -50)
+            meshObject.rotation.set(0, 0.75 * Math.PI, 0);
+            meshObject.material = materialObject
+            meshObject.convertToFlatShadedMesh();
+            meshes.push(meshObject);
+
+            meshObject = new BABYLON.Mesh.CreatePlane("box", 40, scene, true);
+            meshObject.position.set(25, 25, -20)
+            meshObject.material = materialObject
+            meshObject.convertToFlatShadedMesh();
+            meshes.push(meshObject);
+
+            var gizmoManager = new BABYLON.GizmoManager(scene);
+            // gizmoManager.rotationGizmoEnabled = true;
+            gizmoManager.positionGizmoEnabled = true;
+            gizmoManager.attachableMeshes = meshes;
+            gizmoManager.usePointerToAttachGizmos = true;
+
+
+            let points = [];
+            points.push(new BABYLON.Vector3(0, 0, 0));
+            points.push(new BABYLON.Vector3(0, 0, 0));
+            points.push(new BABYLON.Vector3(0, 0, 0));
+
+            let MAX = 12;
+            let DELTA = 1;
+            for (let x = -MAX; x <= MAX; x += DELTA) {
+                for (let y = -MAX; y <= MAX; y += DELTA) {
+                    let meshLight = new BABYLON.Mesh.CreatePlane("box", 1, scene, true);
+                    meshLight.position.set(x, y, 50)
+                    meshLight.material = new BABYLON.StandardMaterial("hb1mat", scene);
+                    meshLight.material.emissiveColor = new BABYLON.Color3(
+                        (1 * Math.sin(0.75 * Math.PI * (y + x) / (2 * MAX))),
+                        (1 * Math.cos(0.75 * Math.PI * (y + x) / (2 * MAX))),
+                        0);
+                    meshLight.isPickable = false;
+                    meshesLight.push(meshLight);
+                }
+            }
+
+            let createMeshesPlane = () => {
+                meshesLight.forEach((meshLight) => {
+                    let positions = meshLight.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+                    let indices = meshLight.getIndices();
+
+                    for (let i = 0; i < indices.length; i += 3) {
+                        let is1 = getCollisionPoint(meshLight,
+                            meshLight.position.x + positions[3 * indices[i + 0] + 0],
+                            meshLight.position.y + positions[3 * indices[i + 0] + 1],
+                            meshLight.position.z + positions[3 * indices[i + 0] + 2]);
+
+                        let is2 = getCollisionPoint(meshLight,
+                            meshLight.position.x + positions[3 * indices[i + 1] + 0],
+                            meshLight.position.y + positions[3 * indices[i + 1] + 1],
+                            meshLight.position.z + positions[3 * indices[i + 1] + 2]);
+
+                        let is3 = getCollisionPoint(meshLight,
+                            meshLight.position.x + positions[3 * indices[i + 2] + 0],
+                            meshLight.position.y + positions[3 * indices[i + 2] + 1],
+                            meshLight.position.z + positions[3 * indices[i + 2] + 2]);
+
+                        if (is1 !== null && is2 !== null && is3 !== null) {
+                            points[0] = is1;
+                            points[1] = is2;
+                            points[2] = is3;
+                            meshesPlane.push(createPlane(scene, points, meshLight.material));
+                        }
+                    }
+                });
+
+                meshes.forEach((mesh) => {
+                    mesh.position.z -= 0.01;
+                })
+            }
+            createMeshesPlane();
+
+
+            let update = () => {
+                meshesPlane.forEach((meshPlane) => {
+                    meshPlane.dispose();
+                });
+                meshesPlane = [];
+
+                meshes.forEach((mesh) => {
+                    mesh.bakeCurrentTransformIntoVertices();
+                });
+
+                createMeshesPlane();
+            }
+
+            // let desiredFps = 60;
+            // let interval = 1000 / (10 * desiredFps);
+            // let lastTime = performance.now();
+            // let inProgress = false;
+            // scene.registerBeforeRender(() => {
+            //     if (inProgress)
+            //         return;
+            //     let currentTime = performance.now();
+            //     const deltaTime = currentTime - lastTime;
+            //     if (deltaTime > interval) {
+            //         lastTime = currentTime - (deltaTime % interval);
+            //         inProgress = true;
+            //         update();
+            //         inProgress = false;
+            //     }
+            // });
+
+            let meshClicked = null;
+            scene.onPointerObservable.add(onPointer);
+            function onPointer(pointerInfo) {
+                if (pointerInfo.type == BABYLON.PointerEventTypes.POINTERDOWN) {
+                    var pickResult = scene.pick(scene.pointerX, scene.pointerY);
+                    meshClicked = null;
+                    if (pickResult && pickResult.pickedPoint) {
+                        meshClicked = pointerInfo.pickInfo.pickedMesh;
+                    }
+                }
+            }
+
+            canvas.addEventListener("pointerup", (e) => {
+                if (e.button === 0) {
+                    if (meshClicked)
+                        update();
+                }
+            });
+
+            return scene;
+        };
+
+
+
+
+        let engine = new BABYLON.Engine(canvas, true, {
+            preserveDrawingBuffer: true,
+            stencil: true
+        });
+        let scene = createScene();
+
+        engine.runRenderLoop(function () {
+            if (scene) {
+                scene.render();
+            }
+        });
+
+        window.addEventListener("resize", function () {
+            engine.resize();
+        });
+    </script>
+
+</body>
+
+</html>
