@@ -40,3 +40,15 @@ https://necip65.github.io/lightsource/version2b.html
 
 * light points have now a parent mesh which can be handled with the gizzmo
 
+
+### version 2c
+
+![Snapshot](https://necip65.github.io/lightsource/version2c.jpg)
+https://necip65.github.io/lightsource/version2c.html
+
+* gizmo now usable only for the meshBase of the light points
+* menu removed. commands now via keyboard. first click on an object mesh.
+** press 'o' to prOject the light or create the mesh in earlier versions
+** press first 'p' (for position) then use x,y,z or X,Y,Z
+** press first 'r' (for rotation) then use x,y,z or X,Y,Z
+
