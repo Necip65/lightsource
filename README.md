@@ -39,4 +39,4 @@ https://necip65.github.io/lightsource/version2a.html
 https://necip65.github.io/lightsource/version2b.html
 
 * light points have now a parent mesh which can be handled with the gizzmo
-* 
+
