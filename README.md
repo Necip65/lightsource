@@ -31,3 +31,12 @@ https://necip65.github.io/lightsource/version2a.html
 * click on menu "create" to start projection
 * click on menu "show" to show/hide the meshes
 * if the max z distances of 3 interesection points are greater than 10 the triangle are set invisible.
+
+
+### version 2b
+
+![Snapshot](https://necip65.github.io/lightsource/version2b.jpg)
+https://necip65.github.io/lightsource/version2b.html
+
+* light points have now a parent mesh which can be handled with the gizzmo
+* 
