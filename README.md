@@ -21,3 +21,13 @@ https://necip65.github.io/lightsource/version2.html
 * click on one of the surfaces to start projection (can take some seconds)
 * light points are now rotateable.
 * only one mesh is now created for the light projections.
+
+
+### version 2a
+
+https://necip65.github.io/lightsource/version2a.html
+
+* gizzmo: rotate, scale, pos the meshes
+* click on menu "create" to start projection
+* click on menu "show" to show/hide the meshes
+* if the max z distances of 3 interesection points are greater than 10 the triangle are set invisible.
