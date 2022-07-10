@@ -48,7 +48,7 @@ https://necip65.github.io/lightsource/version2c.html
 
 * gizmo now usable only for the meshBase of the light points
 * direction line implemented
-* menu removed. commands now via keyboard. first click on an object mesh.
+* menu removed. commands now via keyboard. first click on an object mesh. Gizzmo collids with keyboard commands, deactivated for objectMeshes.
 * press 'o' to prOject the light or create the mesh in earlier versions
 * press first 'p' (for position) then use x,y,z or X,Y,Z
 * press first 'r' (for rotation) then use x,y,z or X,Y,Z
