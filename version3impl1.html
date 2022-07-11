@@ -93,11 +93,11 @@
                 let meshObject = null;
 
                 if (Math.random() > 0.5)
-                    meshObject = BABYLON.MeshBuilder.CreateBox("ball", { size: 10 }, scene);
+                    meshObject = BABYLON.MeshBuilder.CreateBox("ball", { size: 30 }, scene);
                 // else if (Math.random() > 0.5)
                 //     meshObject = BABYLON.MeshBuilder.CreateSphere("ball", { diameter: 10 }, scene);
                 else
-                    meshObject = BABYLON.MeshBuilder.CreatePlane("ball", { size: 10 }, scene);
+                    meshObject = BABYLON.MeshBuilder.CreatePlane("ball", { size: 30 }, scene);
                 meshObject.position.set(20 - 40 * Math.random(), 20 - 40 * Math.random(), 20 - 40 * Math.random())
                 meshObject.rotation.set(.2 * Math.PI * Math.random(), .2 * Math.PI * Math.random(), .2 * Math.PI * Math.random())
                 meshObject.material = materialObject
@@ -161,7 +161,10 @@
             vertexData.normals = normalsCustom;
             vertexData.colors = colorsCustom;
 
+            let creatingMeshObjectsPlane = false;
             let createMeshObjectsPlane = () => {
+                creatingMeshObjectsPlane = true;
+
                 let ip = 0;
                 let ip2 = 0;
 
@@ -244,6 +247,7 @@
                         }
                     }
 
+                    creatingMeshObjectsPlane = false;
                 });
 
                 BABYLON.VertexData.ComputeNormals(positionsCustom, indicesCustom, normalsCustom);
@@ -387,6 +391,8 @@
 
             let t = 0;
             scene.registerBeforeRender(function () {
+                if (creatingMeshObjectsPlane)
+                    return
                 meshObjects.forEach((mesh) => {
                     mesh.rotation.x += 0.01;
                     mesh.rotation.y += 0.01;
