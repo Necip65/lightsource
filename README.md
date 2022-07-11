@@ -53,3 +53,17 @@ https://necip65.github.io/lightsource/version2c.html
 * press first 'p' (for position) then use x,y,z or X,Y,Z
 * press first 'r' (for rotation) then use x,y,z or X,Y,Z
 
+
+### version 3 implementation 1
+
+![Snapshot](https://necip65.github.io/lightsource/version3impl1.jpg)
+https://necip65.github.io/lightsource/version3impl1.html
+
+* rotating objects and spots within a static large cube
+* calculating projections on each cycle
+* zoom in/out to get a better viewpoint
+* light spots are render for three projectionpoints. If they are not equal the triangle is not drawn.
+* drawback: there are fragments of undrawn areas. but with a powerfull CPU and more spots which are nearer together this problem should vanish.
+
+
+This are the basics of a light&shadow generator - have fun.
