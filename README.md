@@ -66,4 +66,10 @@ https://necip65.github.io/lightsource/version3impl1.html
 * drawback: there are fragments of undrawn areas. but with a powerfull CPU and more spots which are nearer together this problem should vanish.
 
 
-This are the basics of a light&shadow generator - have fun.
+### version 3 implementation 2
+
+![Snapshot](https://necip65.github.io/lightsource/version3impl2.jpg)
+https://necip65.github.io/lightsource/version3impl2.html
+
+* static colored window - the pointer shows just the direction of the imaginary sun beyond this scene
+* a bit better scene 
