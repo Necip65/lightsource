@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+    <title>lights & shadows without light sources and shadowgenerators</title>
+
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://preview.babylonjs.com/gui/babylon.gui.min.js"></script>
+
+    <style>
+        html,
+        body {
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        #renderCanvas {
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="renderCanvas"></canvas>
+
+    <script>
+        let canvas = document.getElementById("renderCanvas");
+
+        let createScene = function () {
+            let scene = new BABYLON.Scene(engine);
+            // scene.debugLayer.show();
+            scene.clearColor = new BABYLON.Color3(0.1, 0.1, 0.1);
+            // const axes = new BABYLON.AxesViewer(scene, .25);
+
+            let camera = new BABYLON.ArcRotateCamera("camera",
+                BABYLON.Tools.ToRadians(120),
+                BABYLON.Tools.ToRadians(90),
+                100,
+                BABYLON.Vector3.Zero(), scene);
+            camera.setTarget(BABYLON.Vector3.Zero());
+            camera.attachControl(canvas, true);
+            camera.upperBetaLimit = null;
+            camera.lowerBetaLimit = null;
+            camera.angularSensibilityX = 2000;
+            camera.angularSensibilityY = 2000;
+            camera.wheelPrecision = 50; //Mouse wheel speed
+
+            let lightHemi = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+            lightHemi.intensity = 0.8;
+
+            let light0 = new BABYLON.DirectionalLight("", new BABYLON.Vector3(0, 0, 1), scene);
+            light0.intensity = .8;
+            light0.diffuse = BABYLON.Color3.FromHexString('#FFFFFF');
+            light0.position.z = -1;
+
+            let getCollisionPoint = (meshLight, x, y, z) => {
+                let start = new BABYLON.Vector3(meshBase.position.x + x, meshBase.position.y + y, meshBase.position.z + z);
+                let direction = meshBase.getDirection(BABYLON.Axis.Z);
+                direction.x *= -1;
+                direction.y *= -1;
+                direction.z *= -1;
+
+                let length = 400;
+                let ray = new BABYLON.Ray(start, direction, length);
+
+                // let rayHelper = new BABYLON.RayHelper(ray);
+                // rayHelper.show(scene);
+
+                let pickingInfo = scene.pickWithRay(ray);
+                if (pickingInfo.pickedMesh) {
+                    return {
+                        pickedMesh: pickingInfo.pickedMesh,
+                        pickingInfo: pickingInfo.pickedPoint.subtract(direction.multiplyInPlace(new BABYLON.Vector3(0.1, 0.1, 0.1)))
+                    }
+                }
+                return null;
+            }
+
+            let meshObjects = [];
+            let meshObjectsLight = [];
+            let meshObjectsPlane = [];
+
+            let materialLight = new BABYLON.StandardMaterial("hb1mat", scene);
+            materialLight.alpha = 0.0;
+
+
+            let meshBase = BABYLON.MeshBuilder.CreateSphere("ball", { diameter: 3 }, scene);
+            meshBase.position.set(0, 0, 50);
+
+            let meshLine = BABYLON.MeshBuilder.CreateBox("ball", { width: .1, height: 0.1, depth: 60 }, scene);
+            meshLine.position.set(0, 0, -30);
+            meshLine.isPickable = false;
+            meshLine.parent = meshBase;
+
+
+            let mat = new BABYLON.StandardMaterial("mat", scene);
+            mat.backFaceCulling = false;
+            let custom = new BABYLON.Mesh("custom", scene);
+            custom.material = mat;
+            custom.isPickable = false;
+            let positionsCustom = [];
+            let indicesCustom = [];
+            let normalsCustom = [];
+            let colorsCustom = [];
+            let ic = 0;
+
+            let vertexData = new BABYLON.VertexData();
+            vertexData.positions = positionsCustom;
+            vertexData.indices = indicesCustom;
+            vertexData.normals = normalsCustom;
+            vertexData.colors = colorsCustom;
+
+            let creatingMeshObjectsPlane = false;
+            let createMeshObjectsPlane = () => {
+                creatingMeshObjectsPlane = true;
+
+                let ip = 0;
+                let ip2 = 0;
+
+                meshObjectsLight.forEach((meshLight) => {
+                    let positions = meshLight.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+                    let indices = meshLight.getIndices();
+
+                    for (let i = 0; i < indices.length; i += 3) {
+
+                        let p1 = [
+                            meshLight.position.x + positions[3 * indices[i + 0] + 0],
+                            meshLight.position.y + positions[3 * indices[i + 0] + 1],
+                            meshLight.position.z + positions[3 * indices[i + 0] + 2]
+                        ];
+
+                        let p2 = [
+                            meshLight.position.x + positions[3 * indices[i + 1] + 0],
+                            meshLight.position.y + positions[3 * indices[i + 1] + 1],
+                            meshLight.position.z + positions[3 * indices[i + 1] + 2]
+                        ];
+
+                        let p3 = [
+                            meshLight.position.x + positions[3 * indices[i + 2] + 0],
+                            meshLight.position.y + positions[3 * indices[i + 2] + 1],
+                            meshLight.position.z + positions[3 * indices[i + 2] + 2]
+                        ];
+
+                        let x = meshLight.position.x;
+                        let y = meshLight.position.y;
+                        let color = new BABYLON.Color3(
+                            Math.abs(1 * Math.sin(0.75 * Math.PI * (y + x) / (2 * MAX))),
+                            Math.abs(1 * Math.cos(0.75 * Math.PI * (y + x) / (2 * MAX))),
+                            0);
+
+                        ip2 = ip;
+                        positionsCustom[ip++] = 0;
+                        positionsCustom[ip++] = 0;
+                        positionsCustom[ip++] = 0;
+                        indicesCustom.push(ic++);
+                        colorsCustom.push(color.r);
+                        colorsCustom.push(color.g);
+                        colorsCustom.push(color.b);
+                        colorsCustom.push(1);
+
+                        positionsCustom[ip++] = 0;
+                        positionsCustom[ip++] = 0;
+                        positionsCustom[ip++] = 0;
+                        indicesCustom.push(ic++);
+                        colorsCustom.push(color.r);
+                        colorsCustom.push(color.g);
+                        colorsCustom.push(color.b);
+                        colorsCustom.push(1);
+
+                        positionsCustom[ip++] = 0;
+                        positionsCustom[ip++] = 0;
+                        positionsCustom[ip++] = 0;
+                        indicesCustom.push(ic++);
+                        colorsCustom.push(color.r);
+                        colorsCustom.push(color.g);
+                        colorsCustom.push(color.b);
+                        colorsCustom.push(1);
+
+                        let is1 = getCollisionPoint(meshLight, p1[0], p1[1], p1[2]);
+                        let is2 = getCollisionPoint(meshLight, p2[0], p2[1], p2[2]);
+                        let is3 = getCollisionPoint(meshLight, p3[0], p3[1], p3[2]);
+                        if (is1 !== null && is2 !== null && is3 !== null) {
+                            if (is1.pickedMesh == is2.pickedMesh && is1.pickedMesh == is3.pickedMesh) {
+                                positionsCustom[ip2++] = is1.pickingInfo.x;
+                                positionsCustom[ip2++] = is1.pickingInfo.y;
+                                positionsCustom[ip2++] = is1.pickingInfo.z;
+
+                                positionsCustom[ip2++] = is2.pickingInfo.x;
+                                positionsCustom[ip2++] = is2.pickingInfo.y;
+                                positionsCustom[ip2++] = is2.pickingInfo.z;
+
+                                positionsCustom[ip2++] = is3.pickingInfo.x;
+                                positionsCustom[ip2++] = is3.pickingInfo.y;
+                                positionsCustom[ip2++] = is3.pickingInfo.z;
+                            }
+                        }
+                    }
+
+                    creatingMeshObjectsPlane = false;
+                });
+
+                BABYLON.VertexData.ComputeNormals(positionsCustom, indicesCustom, normalsCustom);
+                vertexData.applyToMesh(custom);
+            }
+
+
+
+            let MAX = 7;
+            for (let x = -MAX; x <= MAX; x += 1) {
+                for (let y = -MAX; y <= MAX; y += 1) {
+                    let meshLight = new BABYLON.Mesh.CreatePlane("box", 1, scene, true);
+                    meshLight.position.set(x, (y), -3)
+                    meshLight.isPickable = false;
+                    meshLight.computeWorldMatrix(true);
+                    meshLight.material = materialLight;
+                    meshObjectsLight.push(meshLight);
+                }
+            }
+
+
+            let meshObject = null;
+            meshObject = BABYLON.MeshBuilder.CreateBox("", { width: 100, height: 100, depth: .2 }, scene);
+            meshObject.position.set(0, 0, 45);
+            meshObject.material = new BABYLON.StandardMaterial("hb1mat", scene);
+            meshObject.material.emissiveColor = BABYLON.Color3.Gray();
+            meshObject.material.alpha = 0.2;
+            meshObject.convertToFlatShadedMesh();
+
+            createMeshObjectsPlane();
+
+            let matClone = new BABYLON.StandardMaterial("mat", scene);
+            matClone.backFaceCulling = false;
+            let customClone = new BABYLON.Mesh("customClone", scene);
+            customClone.material = matClone;
+            customClone.isPickable = false;
+            let vertexDataClone = new BABYLON.VertexData();
+            vertexDataClone.positions = [];
+            vertexDataClone.indices = [];
+            vertexDataClone.normals = [];
+            vertexDataClone.colors = [];
+
+            for (let i = 0; i < positionsCustom.length; i++) { vertexDataClone.positions.push(positionsCustom[i]); }
+            for (let i = 0; i < indicesCustom.length; i++) { vertexDataClone.indices.push(indicesCustom[i]); }
+            for (let i = 0; i < normalsCustom.length; i++) { vertexDataClone.normals.push(normalsCustom[i]); }
+            for (let i = 0; i < colorsCustom.length; i++) { vertexDataClone.colors.push(colorsCustom[i]); }
+
+            vertexDataClone.applyToMesh(customClone);
+            meshObject.isPickable = false;
+
+            meshObject = BABYLON.MeshBuilder.CreateBox("", { width: 100, height: 100, depth: .2 }, scene);
+            meshObject.position.set(0, 0, -50);
+            meshObject.material = new BABYLON.StandardMaterial("hb1mat", scene);
+            meshObject.material.emissiveColor = BABYLON.Color3.Blue();
+            meshObject.material.alpha = 0.9;
+            meshObject.convertToFlatShadedMesh();
+            meshObjects.push(meshObject);
+
+            meshObject = BABYLON.MeshBuilder.CreateBox("", { width: 100, height: 100, depth: .2 }, scene);
+            meshObject.position.set(0, -45, 0);
+            meshObject.material = new BABYLON.StandardMaterial("hb1mat", scene);
+            meshObject.material.emissiveColor = BABYLON.Color3.Red();
+            //meshObject.material.alpha = 0.9;
+            meshObject.rotation.x = -60 * Math.PI / 180;
+            meshObject.convertToFlatShadedMesh();
+            meshObjects.push(meshObject);
+
+            meshObject = BABYLON.MeshBuilder.CreateSphere("", { diameter: 25, segments: 8 }, scene);
+            meshObject.position.set(0, -10, -20);
+            meshObject.material = new BABYLON.StandardMaterial("hb1mat", scene);
+            meshObject.material.emissiveColor = BABYLON.Color3.Red();
+            //meshObject.material.alpha = 0.9;
+            meshObject.convertToFlatShadedMesh();
+            meshObjects.push(meshObject);
+
+            meshObject = BABYLON.MeshBuilder.CreateBox("ball", { width: 20, height: 40, depth: 20 }, scene);
+            meshObject.position.set(-5, 0, -40);
+            meshObject.rotation.set(0, 0.25 * Math.PI, 0)
+            meshObject.material = new BABYLON.StandardMaterial("hb1mat", scene);
+            meshObject.material.emissiveColor = BABYLON.Color3.Yellow();
+            meshObject.material.alpha = 0.9;
+            meshObject.convertToFlatShadedMesh();
+            meshObjects.push(meshObject);
+
+            let t = 0;
+            scene.registerBeforeRender(function () {
+                if (creatingMeshObjectsPlane)
+                    return
+
+                meshBase.rotation.y = 0.1 * Math.sin(t);
+                meshBase.rotation.x = 0.25 * Math.cos(t);
+                t += 0.01;
+
+                createMeshObjectsPlane();
+            });
+
+            return scene;
+        };
+
+
+
+
+        let engine = new BABYLON.Engine(canvas, true, {
+            preserveDrawingBuffer: true,
+            stencil: true
+        });
+        let scene = createScene();
+
+        engine.runRenderLoop(function () {
+            if (scene) {
+                scene.render();
+            }
+        });
+
+        window.addEventListener("resize", function () {
+            engine.resize();
+        });
+    </script>
+
+</body>
+
+</html>
