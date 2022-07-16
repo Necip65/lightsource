@@ -73,3 +73,6 @@ https://necip65.github.io/lightsource/version3impl2.html
 
 * static colored window - the pointer shows just the direction of the imaginary sun beyond this scene
 * a bit better scene 
+
+Modified
+* subtracting one unit from the collision point shows a better result
