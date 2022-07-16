@@ -77,7 +77,7 @@
                 if (pickingInfo.pickedMesh) {
                     return {
                         pickedMesh: pickingInfo.pickedMesh,
-                        pickingInfo: pickingInfo.pickedPoint.subtract(direction.multiplyInPlace(new BABYLON.Vector3(0.1, 0.1, 0.1)))
+                        pickingInfo: pickingInfo.pickedPoint.subtract(direction.multiplyInPlace(new BABYLON.Vector3(1, 1, 1)))
                     }
                 }
                 return null;
@@ -241,15 +241,10 @@
             customClone.material = matClone;
             customClone.isPickable = false;
             let vertexDataClone = new BABYLON.VertexData();
-            vertexDataClone.positions = [];
-            vertexDataClone.indices = [];
-            vertexDataClone.normals = [];
-            vertexDataClone.colors = [];
-
-            for (let i = 0; i < positionsCustom.length; i++) { vertexDataClone.positions.push(positionsCustom[i]); }
-            for (let i = 0; i < indicesCustom.length; i++) { vertexDataClone.indices.push(indicesCustom[i]); }
-            for (let i = 0; i < normalsCustom.length; i++) { vertexDataClone.normals.push(normalsCustom[i]); }
-            for (let i = 0; i < colorsCustom.length; i++) { vertexDataClone.colors.push(colorsCustom[i]); }
+            vertexDataClone.positions = [...positionsCustom];
+            vertexDataClone.indices = [...indicesCustom];
+            vertexDataClone.normals = [...normalsCustom];
+            vertexDataClone.colors = [...colorsCustom];
 
             vertexDataClone.applyToMesh(customClone);
             meshObject.isPickable = false;
